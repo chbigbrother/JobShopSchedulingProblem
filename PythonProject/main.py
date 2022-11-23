@@ -10,7 +10,7 @@ from genetic.fjspGA import calculateMakespan
 from genetic.makespan import getMakespans
 from genetic.fjspGA import plotChart
 
-popSize = 400
+popSize = 100
 maxGen = 200
 pr = 0.005
 pc = 0.8

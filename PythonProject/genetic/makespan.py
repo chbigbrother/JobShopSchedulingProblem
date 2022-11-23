@@ -60,8 +60,13 @@ def getMakespans(cpl, jobDicts, VG):
 
     outer_shell = [0] * len(m_splits)
     time_outer_shell = [0] * len(m_splits)
+    n_vg = []
 
     for i in n:
+        for j in range(VG[i]):
+            n_vg.append(i)
+
+    for i in n_vg:
         idx_m = m_splits[i][outer_shell[i]]
         idx_m = idx_m - 1
 
