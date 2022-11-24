@@ -78,8 +78,8 @@ def getMakespans(cpl, jobDicts, VG):
             proc_t = o[i][outer_shell[i]][idx_m]['processingTime']
         start_t = time_outer_shell[i]
 
+        tag = "{}-{}".format(i+1, outer_shell[i] + 1)
         outer_shell[i] += 1
-        tag = "{}-{}".format(i, outer_shell[i] + 1)
         if (len(time_taken[machine - 1]) > 0):
             time = (start_t + proc_t)
             lng = len(time_taken[machine - 1]) - 1
