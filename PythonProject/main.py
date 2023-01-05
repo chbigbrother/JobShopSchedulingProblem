@@ -6,9 +6,8 @@ import time
 import sys
 from utils import readFile
 from genetic.population import initial_generation
-from genetic.fjspGA import calculateMakespan
+from genetic.fjspGA import calculateMakespan, plotChart, selection
 from genetic.makespan import getMakespans
-from genetic.fjspGA import plotChart
 
 popSize = 100
 maxGen = 200
@@ -19,12 +18,16 @@ pm = 0.1
 latex_export = True
 t0 = time.time()
 jobs, VG, machines, processing_time, jobDicts = readFile("./cases/test_data.txt")
+parameter = jobDicts
 
+population = initial_generation(popSize, jobDicts, VG, machines) # NS MS
 
-parameter = initial_generation(popSize, jobDicts, VG, machines) # NS MS
+selection(population, parameter, VG, machines)
+
 
 gen = 1
 
-sortedPop = sorted(parameter, key=lambda cpl: calculateMakespan(cpl, jobDicts, VG))
-gantt = getMakespans((sortedPop[0][0], sortedPop[0][1]), jobDicts, VG)
+# makespan 결과 값을 기준으로 오름차순 정렬
+sortedPop = sorted(population, key=lambda cpl: calculateMakespan(cpl, jobDicts, VG, machines))
+gantt = getMakespans((sortedPop[0][0], sortedPop[0][1]), jobDicts, VG, machines)
 plotChart(gantt)

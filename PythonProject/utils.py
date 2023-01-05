@@ -10,38 +10,57 @@ def readFile(filePath):
         jobs = []
         machines = []
         processing_time = []
+        multi_ops = []
         VG = []
-
         for i in range(int(nm[0])):
             line = fp.readline()
             cv = list(map(int, line.split()))
             operations = []
-            machine_l = []
             times = []
-            j = 1
-            while j < len(cv):
-                # 각 op 별 machine, processing_time 할당
-                k = cv[j]
+            j = 0
+
+            # 각 op 별 machine, processing_time 할당
+            # operation 개수
+            k = cv[j]
+
+            for kj in range(k):
                 operation = []
-                for kj in range(k):
-                    j = j + 1
-                    if (j >= len(cv)):
-                        break;
-                    # machine 할당
+                machine_l = []
+                j = j + 1
+                end = (cv[j] * 2) + 1
+                if kj > 0:
+                    operation = []
+                for h in range(cv[j]):
+                    j += 1
                     machine = cv[j]
-                    j = j + 1
+                    j += 1
+                    if (j >= len(cv)):
+                        continue;
                     # processing_time 할당
                     processing_t = cv[j]
                     machine_l.append(machine)
                     processing_time.append(processing_t)
                     operation.append({'machine': machine, 'processingTime': processing_t})
-                j = j + 1
                 operations.append(operation)
-            machines.append(machine_l)
+                machines.append(machine_l)
 
             # VG 할당
-            if (j > len(cv)):
-                VG.append(int(cv[-1]))
+            vgcnt = 0
+            VG_L = [[] for i in range(cv[0])]
 
-            jobs.append(operations)
+            for v in range(cv[0]):
+                vgcnt = (-v - 1)
+                VG_L[v].append(int(cv[vgcnt]))
+
+            VG_L.reverse()
+            VG.append(VG_L)
+
+            if len(operations) > 1:
+                for o in range(len(operations)):
+                    if o > 0:
+                        jobs[i] += [operations[o]]
+                    else:
+                        jobs.append([operations[o]])
+            else:
+                jobs.append(operations)
     return jobs, VG, machines, processing_time, {'machineCnt': int(machineCnt), 'jobs': jobs}

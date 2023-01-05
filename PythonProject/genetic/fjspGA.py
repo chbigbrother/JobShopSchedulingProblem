@@ -1,15 +1,11 @@
 #!/usr/bin/env python
-
-# This module contains the detailed implementation of every genetic operators
-# The code is strictly mirroring the section 4.3 of the attached paper
-
 from .makespan import getMakespans
 import matplotlib.pyplot as plt
 import random
 import datetime
 
-def calculateMakespan(cpl, jobDicts, VG):
-    times_taken = getMakespans(cpl, jobDicts, VG)
+def calculateMakespan(cpl, jobDicts, VG, machines):
+    times_taken = getMakespans(cpl, jobDicts, VG, machines)
 
     max_per_machine = []
     for machine in times_taken:
@@ -19,8 +15,14 @@ def calculateMakespan(cpl, jobDicts, VG):
             if end > max_d:
                 max_d = end
         max_per_machine.append(max_d)
+    print(max(max_per_machine))
     return max(max_per_machine)
 
+def selection(population, parameter, VG, machines):
+    keptPopSize = int(0.005 * len(population))
+    sortedPop = sorted(population, key=lambda cpl: calculateMakespan(cpl, parameter, VG, machines))
+
+    return sortedPop[:keptPopSize]
 
 def plotChart(gantt):
     colorbox = ['yellow', 'whitesmoke', 'lightyellow',

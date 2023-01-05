@@ -1,21 +1,45 @@
+from collections import Counter
 
+def VG_transform(VG):
+    VG_t = []
+    for i in range(len(VG)):
+        cnt = 0
+        inner = []
+        for j in range(len(VG[i])):
+            inner += [cnt for k in range(VG[i][j][0])]
+            cnt += 1
+        VG_t.append(inner)
+    return VG_t
 
 # VG 별 machine 나누기
 def split_by_machine(VG, param, jobDicts):
-    (n,m) = param
+    (n, m) = param
     job_lists = []
-    current = 0
-    if(len(VG) > 0):
-        for v in VG:
-            append_l = []
-            for i in range(v):
-                append_l.append(m[current])
-                current += 1
-            job_lists.append(append_l)
+    if (len(VG) > 0):
+        cnt = 0
+        later_list = []
+        for i in range(len(VG)):
+            for j in range(len(VG[i])):
+                inner = []
+                later = []
+                h = 0
+                for k in range(VG[i][j][0]):
+                    if j > 0:
+                        later.append(m[cnt])
+                        h += 1
+                    else:
+                        inner.append(m[cnt])
+                    cnt += 1
+
+                if len(inner) > 0:
+                    job_lists.append(inner)
+                if len(later) > 0:
+                    job_lists[i] += later
+        job_lists += later_list
     else:
         current = 0
         for index, job in enumerate(jobDicts['jobs']):
-            job_lists.append(m[current:current+len(job)])
+            job_lists.append(m[current:current + len(job)])
             current += len(job)
 
     return job_lists
@@ -32,14 +56,14 @@ def find_first_proc_time(start_ctr, duration, machine_jobs):
 
     if machine_jobs:
         for job in machine_jobs:
-            max_duration_list.append(job[2] + job[1])
+            max_duration_list.append(job[3] + job[1])
 
         max_duration = max(max(max_duration_list), start_ctr) + duration
 
     machine_used = [True] * max_duration
 
     for job in machine_jobs:
-        start = job[2]
+        start = job[3]
         long = job[1]
         for k in range(start, start + long):
             machine_used[k] = False
@@ -49,49 +73,73 @@ def find_first_proc_time(start_ctr, duration, machine_jobs):
             return k
 
 
-def getMakespans(cpl, jobDicts, VG):
+def getMakespans(cpl, jobDicts, VG, machines):
     o = jobDicts['jobs']
     (n, m) = cpl
+    max_machine = 1
+    for i in machines:
+        if max(i) > max_machine:
+            max_machine = max(i)
 
-    cnt = 0
-    ops = [[] for i in range(jobDicts['machineCnt'])]
-    time_taken = [[] for i in range(jobDicts['machineCnt'])]
+    # 작업 별 사용하는 machine 분류
     m_splits = split_by_machine(VG, (n, m), jobDicts)
-
+    # 각 작업 순서 기록
     outer_shell = [0] * len(m_splits)
-    time_outer_shell = [0] * len(m_splits)
-    n_vg = []
+    # 각 작업 별 시작 시간 기록
+    str_time_task = [0] * len(m_splits)
+    # 각 기계별 작업의 processing time 기록
+    ops = [[] for i in range(max_machine)]
 
+    vg_t = VG_transform(VG)
+    vt = [0] * len(m_splits)
     for i in n:
-        for j in range(VG[i]):
-            n_vg.append(i)
-
-    for i in n_vg:
         idx_m = m_splits[i][outer_shell[i]]
-        idx_m = idx_m - 1
-
+        # machine과 processing time 할당
         if (len(VG) > 0):
-            machine = [i['machine'] for i in o[i][0] if i['machine'] == idx_m + 1][0]
-            proc_t = [i['processingTime'] for i in o[i][0] if i['machine'] == idx_m + 1][0]
+            machine = [o[i][outer_shell[i]][k]['machine'] for k in range(len(o[i][outer_shell[i]])) if
+                       o[i][outer_shell[i]][k]['machine'] == idx_m][0]
+            proc_t = [o[i][outer_shell[i]][k]['processingTime'] for k in range(len(o[i][outer_shell[i]])) if
+                      o[i][outer_shell[i]][k]['machine'] == idx_m][0]
         else:
             machine = o[i][outer_shell[i]][idx_m]['machine']
             proc_t = o[i][outer_shell[i]][idx_m]['processingTime']
-        start_t = time_outer_shell[i]
 
-        tag = "{}-{}".format(i+1, outer_shell[i] + 1)
-        outer_shell[i] += 1
-        if (len(time_taken[machine - 1]) > 0):
-            time = (start_t + proc_t)
-            lng = len(time_taken[machine - 1]) - 1
-            time = time_taken[machine - 1][lng] + time
-            time_taken[machine - 1].append(time)
-            ops[machine - 1].append((tag, time_taken[machine - 1][lng], time))
+        start_t = str_time_task[i]
+
+        start = find_first_proc_time(start_t, proc_t, ops[machine - 1])
+        tag = "{}-{}".format(i, vg_t[i][outer_shell[i]] + 1)
+
+        counter = Counter(vg_t[i])
+
+        if (len(ops[machine - 1]) > 0):
+            if (vt[i] != vg_t[i][outer_shell[i]]):
+                if counter[vg_t[i][outer_shell[i]]] - 1 == 0:
+                    str_time_task[i] = (start + proc_t)
+                else:
+                    str_time_task[i] = start_t  # (start + proc_t)
+                vt[i] = vg_t[i][outer_shell[i]]
+            else:
+                if (counter[outer_shell[i]] - 1) == outer_shell[i]:
+                    str_time_task[i] = (start + proc_t)
+                else:
+                    str_time_task[i] = start_t  # (start + proc_t)
         else:
-            time_taken[machine - 1].append((start_t + proc_t))
-            ops[machine - 1].append((tag, start_t, (start_t + proc_t)))
+            start = 0
+            str_time_task[i] = start_t  # (start + proc_t)
 
-    # calc = calculateMakespan(ops)
+        ops[machine - 1].append((tag, proc_t, start_t, start))
 
-    return ops
+        outer_shell[i] += 1
+        # str_time_task[i] = (start + proc_t)
+
+    data = []
+
+    for idx, machine in enumerate(ops):
+        operations = []
+        for operation in machine:
+            operations.append((operation[0], operation[3], operation[3] + operation[1]))
+        data.append(operations)
+
+    return data
 
 
