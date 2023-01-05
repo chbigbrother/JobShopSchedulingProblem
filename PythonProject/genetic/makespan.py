@@ -119,12 +119,13 @@ def getMakespans(cpl, jobDicts, VG, machines):
                     str_time_task[i] = start_t  # (start + proc_t)
                 vt[i] = vg_t[i][outer_shell[i]]
             else:
-                if (counter[outer_shell[i]] - 1) == outer_shell[i]:
+                if (counter[vg_t[i][outer_shell[i]]]-1) == outer_shell[i]:
                     str_time_task[i] = (start + proc_t)
                 else:
                     str_time_task[i] = start_t  # (start + proc_t)
         else:
-            start = 0
+            if vg_t[i][outer_shell[i]] == 0:
+                start = 0
             str_time_task[i] = start_t  # (start + proc_t)
 
         ops[machine - 1].append((tag, proc_t, start_t, start))
