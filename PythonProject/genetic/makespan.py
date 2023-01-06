@@ -87,6 +87,8 @@ def getMakespans(cpl, jobDicts, VG, machines):
     outer_shell = [0] * len(m_splits)
     # 각 작업 별 시작 시간 기록
     str_time_task = [0] * len(m_splits)
+    # 각 작업 별 종료 시간 기록
+    end_time_task = [0] * len(m_splits)
     # 각 기계별 작업의 processing time 기록
     ops = [[] for i in range(max_machine)]
 
@@ -107,7 +109,7 @@ def getMakespans(cpl, jobDicts, VG, machines):
         start_t = str_time_task[i]
 
         start = find_first_proc_time(start_t, proc_t, ops[machine - 1])
-        tag = "{}-{}".format(i, vg_t[i][outer_shell[i]] + 1)
+        tag = "{}-{}".format(i + 1, vg_t[i][outer_shell[i]] + 1)
 
         counter = Counter(vg_t[i])
 
@@ -119,19 +121,24 @@ def getMakespans(cpl, jobDicts, VG, machines):
                     str_time_task[i] = start_t  # (start + proc_t)
                 vt[i] = vg_t[i][outer_shell[i]]
             else:
-                if (counter[vg_t[i][outer_shell[i]]]-1) == outer_shell[i]:
+                if (counter[vg_t[i][outer_shell[i]]] - 1) == outer_shell[i]:
                     str_time_task[i] = (start + proc_t)
                 else:
                     str_time_task[i] = start_t  # (start + proc_t)
         else:
+            if (end_time_task[i]) > (start + proc_t):
+                str_time_task[i] = end_time_task[i]
+            else:
+                str_time_task[i] = start_t  # (start + proc_t)
             if vg_t[i][outer_shell[i]] == 0:
                 start = 0
-            str_time_task[i] = start_t  # (start + proc_t)
+
+        if end_time_task[i] <= (start + proc_t):
+            end_time_task[i] = (start + proc_t)
 
         ops[machine - 1].append((tag, proc_t, start_t, start))
 
         outer_shell[i] += 1
-        # str_time_task[i] = (start + proc_t)
 
     data = []
 

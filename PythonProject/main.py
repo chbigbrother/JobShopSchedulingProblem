@@ -9,7 +9,7 @@ from genetic.population import initial_generation
 from genetic.fjspGA import calculateMakespan, plotChart, selection
 from genetic.makespan import getMakespans
 
-popSize = 100
+popSize = 400
 maxGen = 200
 pr = 0.005
 pc = 0.8
@@ -21,8 +21,8 @@ jobs, VG, machines, processing_time, jobDicts = readFile("./cases/test_data.txt"
 parameter = jobDicts
 
 population = initial_generation(popSize, jobDicts, VG, machines) # NS MS
-
-selection(population, parameter, VG, machines)
+print(population)
+# selection(population, parameter, VG, machines)
 
 
 gen = 1

@@ -15,7 +15,7 @@ def calculateMakespan(cpl, jobDicts, VG, machines):
             if end > max_d:
                 max_d = end
         max_per_machine.append(max_d)
-    print(max(max_per_machine))
+
     return max(max_per_machine)
 
 def selection(population, parameter, VG, machines):
@@ -27,6 +27,7 @@ def selection(population, parameter, VG, machines):
 def plotChart(gantt):
     colorbox = ['yellow', 'whitesmoke', 'lightyellow',
                 'khaki', 'silver', 'pink', 'lightgreen', 'orange', 'grey', '#8ca8df', 'brown']
+    hatch = ['/', '\\', '|', '-', '+', 'x', 'o', 'O', '.', '*']
 
     for i in range(100):
         colorArr = ['1', '2', '3', '4', '5', '6', '7',
@@ -54,9 +55,10 @@ def plotChart(gantt):
             x4 = mPoint1
             y4 = mText
 
+            hatch_n = int(Word.split('-')[1])-1
             color_per_job = int(j[0][:j[0].find('-')])
             plt.fill([x1, x2, x3, x4], [y1, y2, y3, y4],
-                     color=colorbox[color_per_job])
+                     color=colorbox[color_per_job], hatch=hatch[hatch_n])
             plt.text(0.5 * mPoint1 + 0.5 * mPoint2 - 3, mText - 0.5, Word)
 
         mcnt += 1

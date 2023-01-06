@@ -7,6 +7,10 @@ def readFile(filePath):
         line = fp.readline()
         nm = line.strip().split()
         machineCnt = nm[1]
+        vg_bool = False
+        if nm[2] == 'v':
+            vg_bool = True
+
         jobs = []
         machines = []
         processing_time = []
@@ -44,23 +48,26 @@ def readFile(filePath):
                 operations.append(operation)
                 machines.append(machine_l)
 
-            # VG 할당
-            vgcnt = 0
-            VG_L = [[] for i in range(cv[0])]
+            if vg_bool == True:
+                # VG 할당
+                vgcnt = 0
+                VG_L = [[] for i in range(cv[0])]
 
-            for v in range(cv[0]):
-                vgcnt = (-v - 1)
-                VG_L[v].append(int(cv[vgcnt]))
+                for v in range(cv[0]):
+                    vgcnt = (-v - 1)
+                    VG_L[v].append(int(cv[vgcnt]))
 
-            VG_L.reverse()
-            VG.append(VG_L)
+                VG_L.reverse()
+                VG.append(VG_L)
 
             if len(operations) > 1:
                 for o in range(len(operations)):
                     if o > 0:
+                        # multi_ops.append([operations[o]])
                         jobs[i] += [operations[o]]
                     else:
                         jobs.append([operations[o]])
             else:
                 jobs.append(operations)
+        # jobs += multi_ops
     return jobs, VG, machines, processing_time, {'machineCnt': int(machineCnt), 'jobs': jobs}
